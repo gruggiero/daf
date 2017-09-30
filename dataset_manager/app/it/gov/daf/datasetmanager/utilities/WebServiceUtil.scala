@@ -79,7 +79,6 @@ object WebServiceUtil {
       val creds = au.split(" ")
       (creds.head, creds.tail.headOption.getOrElse(""))
     }
-    // val authType: String = auth.fold("")( au => au.split(" "))
 
     authType.toLowerCase match {
       case "basic" =>
@@ -96,25 +95,6 @@ object WebServiceUtil {
         Credentials(user , None)
       case _ =>       throw new Exception("Authorization header not found")
     }
-
-    // if ( authType.equalsIgnoreCase("basic") ) {
-
-    //   val userAndPass = new String(Base64.decodeBase64(auth.get.split(" ").drop(1).head.getBytes)).split(":")
-    //   Credentials( Option(userAndPass(0)), Option(userAndPass(1)) )
-
-    // } else if( authType.equalsIgnoreCase("bearer") ) {
-
-    //   val user:Option[String] = Option( Authentication.getClaims(request).get.get("sub").get.toString )
-    //   println("JWT user:"+user)
-    //   Credentials(user , None)
-
-    // } else
-    //   throw new Exception("Authorization header not found")
-
-
-    //val userAndPass = if (auth.get.contains(" ")) new String(Base64.decodeBase64(auth.get.split(" ").drop(1).head.getBytes)).split(":")
-    //                  else new String(Base64.decodeBase64(auth.get.getBytes)).split(":")
-
 
   }
 
@@ -133,11 +113,6 @@ object WebServiceUtil {
     else
       cleanDquote( (( (jsonError \ "obj")(0) \ "msg").getOrElse(JsArray(Seq(JsString(" ?? "))))(0) ).get.toString() )
 
-    //if( error.errors.length > 1 )
-    //cleanDquote( (((JsError.toJson(error) \ "obj[0].theme").getOrElse(JsArray(Seq(JsString("  "))))(0) \ "msg").getOrElse(JsArray(Seq(JsString("  "))))(0) ).get.toString() )
-    //else
-
-    //cleanDquote( (((JsError.toJson(error) \ "obj").getOrElse(JsArray(Seq(JsString("  "))))(0) \ "msg").getOrElse(JsArray(Seq(JsString("  "))))(0) ).get.toString() )
   }
 
   def getMessageFromCkanError(error:JsValue): String ={

@@ -39,7 +39,7 @@ package dataset_manager.yaml {
         // ----- Start of unmanaged code area for constructor Dataset_managerYaml
 
         // ----- End of unmanaged code area for constructor Dataset_managerYaml
-        val getDataset = getDatasetAction { input: (String, String, Physical_datasetsGetChunk_size, Physical_datasetsGetChunk_size) =>
+        val getDataset = getDatasetAction { input: (String, String, GetDataGetChunk_size, GetDataGetChunk_size) =>
             val (uri, format, limit, chunk_size) = input
             // ----- Start of unmanaged code area for action  Dataset_managerYaml.getDataset
             // dummy auth
@@ -49,14 +49,17 @@ package dataset_manager.yaml {
           val dummyAuth = ""
           // val res = StorageCaller.getDataset(format, chunk_size.map(_.), uri, dummyAuth, limit )
           val res = StorageCaller.getDataset(format, None, uri, auth.getOrElse(""), None )
-      GetDataset200(res)
+          GetDataset200(res)
             // ----- End of unmanaged code area for action  Dataset_managerYaml.getDataset
         }
-        val token = tokenAction {  _ =>  
+    
+     // Dead code for absent methodDataset_managerYaml.token
+     /*
             // ----- Start of unmanaged code area for action  Dataset_managerYaml.token
             NotImplementedYet
             // ----- End of unmanaged code area for action  Dataset_managerYaml.token
-        }
+     */
+
     
      // Dead code for absent methodDataset_managerYaml.createIPAuser
      /*

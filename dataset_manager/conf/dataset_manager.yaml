@@ -33,23 +33,21 @@ schemes:
   - https
 produces:
   - application/json
-securityDefinitions:
-  basicAuth:
-    type: basic
-    description: HTTP Basic Authentication. Works over `HTTP` and `HTTPS`
+# securityDefinitions:
+#   basicAuth:
+#     type: basic
+#     description: HTTP Basic Authentication. Works over `HTTP` and `HTTPS`
 paths:
-  "/physical-datasets":
+  "/getData":
     get:
       tags:
       - physical-dataset
-      summary: given a physical dataset URI it returns a json document with the first
+      summary: given a  logical URI it returns a json document with the first
         'limit' number of rows
       description: ''
       operationId: getDataset
       produces:
       - application/json
-      - text/plain
-      - application/octet-stream
       parameters:
       - name: uri
         in: query
@@ -76,27 +74,6 @@ paths:
           description: successful operation
           schema:
             "$ref": "#/definitions/StorageContent"
-      security:
-      - basicAuth: []
-  "/token":
-    get:
-      summary: Get Token
-      description: |
-        It returns the JWT token
-      tags:
-        - JWT Token
-      operationId: token
-      security:
-        - basicAuth: []
-      responses:
-        200:
-          description: The JWT token
-          schema:
-            type: string
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
 definitions:
   UserIpa:
     #type: object

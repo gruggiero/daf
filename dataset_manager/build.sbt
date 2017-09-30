@@ -52,6 +52,7 @@ libraryDependencies ++= Seq(
   "org.webjars" % "swagger-ui" % swaggerUiVersion,
   "it.gov.daf" %% "common" % version.value,
   "it.gov.daf" %% "daf-storage-manager-client" % "0.1-SNAPSHOT",
+  "it.gov.daf" %% "daf-catalog-manager-client" % "1.0-SNAPSHOT",
   "me.lessis" %% "base64" % "0.2.0",
   specs2 % Test
 )
