@@ -8,11 +8,14 @@ import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import it.gov.daf.storagemanager.ActionAnyContent
 import dataset_manager.yaml.StorageContent
-import it.gov.daf.storagemanager.client.Storage_managerClient
+// import it.gov.daf.storagemanager.client.Storage_managerClient
+import caller.Storage_managerClient
 import play.api.libs.ws.ahc.AhcWSClient
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
+
+import it.gov.daf.storagemanager.json._
 
 import play.api.libs.ws._
 
@@ -26,59 +29,41 @@ object StorageCaller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val uriCatalogManager = ConfigFactory.load().getString("WebServices.storageUrl")
+  val uriStorageManager = ConfigFactory.load().getString("WebServices.storageUrl")
 
   def getDataset(format: String, chunk_size: Option[Int], uri: String, Authorization: String, limit: Option[Int]) // : Future[Successfull]
   = {
-    println(format)
     implicit val system: ActorSystem = ActorSystem()
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     val client: AhcWSClient = AhcWSClient()
-    val storageManager = new Storage_managerClient(client)(uriCatalogManager)
+    val storageManager = new Storage_managerClient(client)(uriStorageManager)
+    // val catalogManager = new _managerClient(client)(uriStorageManager)
 
     //val service = s"$uriCatalogManager/dataset-catalogs/$uri"
-    //val response = ingestionManager.connect(client)(service)
+    //valL response = ingestionManager.connect(client)(service)
 
     val logical_uri = URLEncoder.encode(uri, "UTF-8")
 
-    client.url(s"$uriCatalogManager/storage-manager/v1/physical-datasets?uri=dataset%3Ahdfs%3A%2Fdaf%2Fordinary%2Fcomune_milano%2Fenergia%2Fconsumi%2Fa2a_curve.landing.csv&format=csv&limit=10").withHeaders((this._render_header_params("Authorization" -> Some(Authorization)): _*)).get().foreach({ resp =>
-      println(resp.body)
-      // if ((resp.status >= 200) && (resp.status <= 299)) Json.parse(resp.body).as[ActionAnyContent]
-      // else throw new java.lang.RuntimeException("unexpected response status: " + resp.status + " " + resp.body.toString)
-    })
-
-    val response = storageManager.getDataset(format: String, chunk_size: Option[Int], uri: String, Authorization: String, limit: Option[Int])
-    val res: Future[StorageContent] = response
-      .map{
-        case ActionAnyContent(value) =>
-          println(s"value: $value")
-          StorageContent(value)
-        case ex => StorageContent(Some(s"ERROR $ex"))
+    val response = {
+      val controller: WSResponse => StorageContent = format match {
+        case "json" => resp => StorageContent(Option(resp.body)) //resp.json
+        case _ => resp => StorageContent(Option(resp.body))
       }
 
-  // def getDataset(format: String, chunk_size: Option[Int], uri: String, Authorization: String, limit: Option[Int]) = {
-  //   client.url(s"$uriCatalogManager/storage-manager/v1/physical-datasets?uri=dataset%3Ahdfs%3A%2Fdaf%2Fordinary%2Fcomune_milano%2Fenergia%2Fconsumi%2Fa2a_curve.landing.csv&format=csv&limit=10").withHeaders((this._render_header_params("Authorization" -> Some(Authorization)): _*)).get().map({ resp =>
-  //     println(resp.body)
-  //     if ((resp.status >= 200) && (resp.status <= 299)) Json.parse(resp.body).as[ActionAnyContent]
-  //     else throw new java.lang.RuntimeException("unexpected response status: " + resp.status + " " + resp.body.toString)
-  //   })
-  // }
 
-    res
-  }
+      storageManager.getDataset(format: String, chunk_size: Option[Int], uri: String,
+        Authorization: String, limit: Option[Int], controller)
 
-  // private def _render_url_params(pairs: (String, Option[Any])*) = {
-  //   val parts = pairs.collect({
-  //     case (k, Some(v)) => k + "=" + v
-  //   })
-  //   if (parts.nonEmpty) parts.mkString("?", "&", "")
-  //   else ""
-  // }
+      // val res: Future[StorageContent] = response
+      //   .map{
+      //     case ActionAnyContent(value) =>
+      //       println(s"value: $value")
+      //       StorageContent(value)
+      //     case ex => StorageContent(Some(s"ERROR $ex"))
+      //   }
 
-  private def _render_header_params(pairs: (String, Option[String])*) = {
-    pairs.collect({
-      case (k, Some(v)) => k -> v
-    })
+    }
+    response
   }
 
 }
