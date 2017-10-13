@@ -9,7 +9,7 @@ import com.typesafe.config.ConfigFactory
 import it.gov.daf.storagemanager.ActionAnyContent
 import dataset_manager.yaml.StorageContent
 // import it.gov.daf.storagemanager.client.Storage_managerClient
-import caller.Storage_managerClient
+import caller.{ Storage_managerClient, Catalog_managerClient }
 import play.api.libs.ws.ahc.AhcWSClient
 
 import scala.concurrent.Future
@@ -27,9 +27,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 
 object StorageCaller {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
   val uriStorageManager = ConfigFactory.load().getString("WebServices.storageUrl")
+  val uriCatalogManager = ConfigFactory.load().getString("WebServices.catalogUrl")
 
   def getDataset(format: String, chunk_size: Option[Int], uri: String, Authorization: String, limit: Option[Int]) // : Future[Successfull]
   = {
@@ -37,12 +36,12 @@ object StorageCaller {
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     val client: AhcWSClient = AhcWSClient()
     val storageManager = new Storage_managerClient(client)(uriStorageManager)
-    // val catalogManager = new _managerClient(client)(uriStorageManager)
+    val catalogManager = new Catalog_managerClient(client)(uriCatalogManager)
 
     //val service = s"$uriCatalogManager/dataset-catalogs/$uri"
     //valL response = ingestionManager.connect(client)(service)
 
-    val logical_uri = URLEncoder.encode(uri, "UTF-8")
+    val encodedUri = URLEncoder.encode(uri, "UTF-8")
 
     val response = {
       val controller: WSResponse => StorageContent = format match {
@@ -51,8 +50,8 @@ object StorageCaller {
       }
 
 
-      storageManager.getDataset(format: String, chunk_size: Option[Int], uri: String,
-        Authorization: String, limit: Option[Int], controller)
+      catalogManager.uribyid(Authorization, encodedUri).flatMap( uri =>
+        storageManager.getDataset(format, chunk_size, uri, Authorization, limit, controller))
 
       // val res: Future[StorageContent] = response
       //   .map{

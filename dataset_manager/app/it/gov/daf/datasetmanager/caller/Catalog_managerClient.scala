@@ -1,4 +1,4 @@
-package it.gov.daf.catalogmanager.client
+package it.gov.daf.datasetmanager.caller
 
 import scala.concurrent.Future
 
