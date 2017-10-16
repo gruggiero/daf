@@ -125,7 +125,7 @@ dockerCmd := Seq("-jvm-debug", "5005")
 dockerExposedPorts := Seq(9000)
 dockerRepository := Option("10.98.74.120:5000")
 
-publishTo := {
+publishTo in ThisBuild := {
   val nexus = "http://nexus.default.svc.cluster.local:8081/repository/"
   if (isSnapshot.value)
     Some("snapshots" at nexus + "maven-snapshots/")

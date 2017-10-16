@@ -25,6 +25,7 @@ class Storage_managerClient @Inject() (WS: WSClient) (baseUrl: String) {
   def getDataset[T](format: String, chunk_size: Option[Int], uri: String, Authorization: String, limit: Option[Int],
   converter: WSResponse => T ) = {
     WS.url(s"$baseUrl/storage-manager/v1/physical-datasets" + this._render_url_params("uri" -> Some(uri), "format" -> Some(format), "limit" -> limit.map(_.toString), "chunk_size" -> chunk_size.map(_.toString))).withHeaders((this._render_header_params("Authorization" -> Some(Authorization)): _*)).get().map({ resp =>
+      println(s"resp: ${resp.body}")
       if ((resp.status >= 200) && (resp.status <= 299)) converter(resp)
       else throw new java.lang.RuntimeException(s"unexpected response status: ${resp.status.toString}  ${resp.body.toString}")
     })
@@ -36,8 +37,8 @@ class Storage_managerClient @Inject() (WS: WSClient) (baseUrl: String) {
     })
   }
   private def _render_url_params(pairs: (String, Option[String])*) = {
-    val parts = pairs.collect{
-      case (k, Some(v)) => s"$k=${v.toString}"
+    val parts = pairs.collect {
+      case (k, Some(v)) => s"$k=$v"
     }
     if (parts.nonEmpty) parts.mkString("?", "&", "")
     else ""

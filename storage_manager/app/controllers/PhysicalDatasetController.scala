@@ -36,6 +36,7 @@ import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc._
 import play.mvc.Http
+import play.api.Logger
 
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
@@ -121,6 +122,7 @@ class PhysicalDatasetController @Inject()(configuration: Configuration, val play
       CheckedAction(exceptionManager orElse hadoopExceptionManager) {
         HadoopDoAsAction {
           _ =>
+          Logger("getDataset").info(s"GetDataset with limit: ${chunk_size}")
             val datasetURI = new URI(uri)
             val locationURI = new URI(datasetURI.getSchemeSpecificPart)
             val locationScheme = locationURI.getScheme
