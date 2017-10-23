@@ -48,7 +48,7 @@ import scala.util.{Failure, Success, Try}
     "org.wartremover.warts.Nothing",
     "org.wartremover.warts.IsInstanceOf",
     "org.wartremover.warts.Null",
-    "org.wartremover.warts.Var",
+    "org.wartremover.warts.Any",
     "org.wartremover.warts.AsInstanceOf"
   )
 )
@@ -119,6 +119,7 @@ class PhysicalDatasetController @Inject()(configuration: Configuration, val play
                  @ApiParam(value = "max number of rows/chunks to return", required = false) limit: Option[Int],
                  @ApiParam(value = "chunk size", required = false) chunk_size: Option[Int]): Action[AnyContent] =
     Action {
+      Logger("getDataset").info(s"GetDataset in action: ${chunk_size}")
       CheckedAction(exceptionManager orElse hadoopExceptionManager) {
         HadoopDoAsAction {
           _ =>
@@ -128,9 +129,23 @@ class PhysicalDatasetController @Inject()(configuration: Configuration, val play
             val locationScheme = locationURI.getScheme
             val actualFormat = format match {
               case "avro" => "com.databricks.spark.avro"
+              case "csv" => "com.databricks.spark.csv"
               case format: String => format
             }
             locationScheme match {
+              case "hdfs" if actualFormat == "csv" =>
+                val location = locationURI.getSchemeSpecificPart
+                val df = sparkSession.read
+                  .option("header", "true")
+                  .csv(location)
+                // val rdd = sparkSession.sparkContext.textFile(location)
+                // val doc = rdd.take(limit.getOrElse(defaultLimit))
+                val doc = s"[${
+                  df.take(limit.getOrElse(defaultLimit)).map(row => {
+                    Utility.rowToJson(df.schema)(row)
+                  })//.mkString(",")
+                }]"
+                Ok(doc).as(JSON)
               case "hdfs" if actualFormat == "text" =>
                 val location = locationURI.getSchemeSpecificPart
                 val rdd = sparkSession.sparkContext.textFile(location)

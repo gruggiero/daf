@@ -5,7 +5,8 @@ logs
 .history
 logs
 */build
-*/production.conf
+production.conf
+*.keytab
 iot_ingestion_manager/common/src/generated
 .ipynb_checkpoints
 data

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import CommonBuild._
 import Versions._
 import com.typesafe.sbt.packager.docker.Cmd
 import sbt.Keys.resolvers
@@ -40,26 +41,29 @@ scalacOptions ++= Seq(
 )
 
 wartremoverErrors ++= Warts.allBut(Wart.Equals)
+wartremoverExcluded ++= getRecursiveListOfFiles(baseDirectory.value / "target" / "scala-2.11" / "routes").toSeq
+wartremoverExcluded ++= getRecursiveListOfFiles(baseDirectory.value / "app" / "generated_controllers").toSeq
 wartremoverExcluded ++= routes.in(Compile).value
 
-lazy val client = (project in file("client")).
-  settings(Seq(
-    name := "daf-storage-manager-client",
-    swaggerGenerateClient := true,
-    swaggerClientCodeGenClass := new it.gov.daf.swaggergenerators.DafClientGenerator,
-    swaggerCodeGenPackage := "it.gov.daf.storagemanager",
-    swaggerModelFilesSplitting := "oneFilePerModel",
-    swaggerSourcesDir := file(s"${baseDirectory.value}/../conf"),
-    libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % playVersion,
-      "com.typesafe.play" %% "play-ws" %  playVersion
-    )
-  )).
-  enablePlugins(SwaggerCodegenPlugin)
+// lazy val client = (project in file("client")).
+//   settings(Seq(
+//     name := "daf-storage-manager-client",
+//     swaggerGenerateClient := true,
+//     swaggerClientCodeGenClass := new it.gov.daf.swaggergenerators.DafClientGenerator,
+//     swaggerCodeGenPackage := "it.gov.daf.storagemanager",
+//     swaggerModelFilesSplitting := "oneFilePerModel",
+//     swaggerSourcesDir := file(s"${baseDirectory.value}/../conf"),
+//     libraryDependencies ++= Seq(
+//       "com.typesafe.play" %% "play-json" % playVersion,
+//       "com.typesafe.play" %% "play-ws" %  playVersion
+//     )
+//   )).
+//   enablePlugins(SwaggerCodegenPlugin)
 
 lazy val root = (project in file(".")).
-  enablePlugins(PlayScala, AutomateHeaderPlugin, DockerPlugin)
-  .dependsOn(client).aggregate(client)
+  enablePlugins(PlayScala, ApiFirstCore, ApiFirstPlayScalaCodeGenerator, ApiFirstSwaggerParser, /*AutomateHeaderPlugin,*/ DockerPlugin)
+  // enablePlugins(PlayScala, AutomateHeaderPlugin, DockerPlugin)
+  // .dependsOn(client).aggregate(client)
 
 val hadoopExcludes =
   (moduleId: ModuleID) => moduleId.
@@ -103,10 +107,22 @@ libraryDependencies ++= Seq(
 ) ++ hadoopLibraries ++ sparkLibraries
 
 resolvers ++= Seq(
+  "zalando-bintray" at "https://dl.bintray.com/zalando/maven",
+  Resolver.url("sbt-plugins", url("http://dl.bintray.com/gruggiero/sbt-plugins"))(Resolver.ivyStylePatterns),
   Resolver.sonatypeRepo("releases"),
   "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
   "daf repo" at "http://nexus.default.svc.cluster.local:8081/repository/maven-public/"
 )
+
+// Play provides two styles of routers, one expects its actions to be injected, the
+// other, legacy style, accesses its actions statically.
+routesGenerator := InjectedRoutesGenerator
+
+apiFirstParsers := Seq(ApiFirstSwaggerParser.swaggerSpec2Ast.value).flatten
+
+playScalaAutogenerateTests := false
+
+playScalaCustomTemplateLocation := Some(baseDirectory.value / "templates")
 
 licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt"))
 headerLicense := Some(HeaderLicense.ALv2("2017", "TEAM PER LA TRASFORMAZIONE DIGITALE"))
@@ -124,6 +140,8 @@ dockerEntrypoint := Seq(s"bin/${name.value}", "-Dconfig.file=conf/production.con
 dockerCmd := Seq("-jvm-debug", "5005")
 dockerExposedPorts := Seq(9000)
 dockerRepository := Option("10.98.74.120:5000")
+
+// PlayKeys.devSettings := Seq("config.file" -> "/Users/gruggie/git/gruggiero/daf/storage_manager/conf/production.conf")
 
 publishTo in ThisBuild := {
   val nexus = "http://nexus.default.svc.cluster.local:8081/repository/"
