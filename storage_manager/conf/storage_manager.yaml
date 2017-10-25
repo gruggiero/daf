@@ -56,8 +56,6 @@ paths:
       operationId: getDataset
       produces:
       - application/json
-      - text/plain
-      - application/octet-stream
       parameters:
       - name: uri
         in: query
@@ -86,8 +84,48 @@ paths:
           description: successful operation
           schema:
             "$ref": "#/definitions/ActionAnyContent"
-      # security:
-      # - basicAuth: []
+  "/physical-datasets/json":
+    get:
+      tags:
+      - physical-dataset
+      summary: given a physical dataset URI it returns a json document with the first
+        'limit' number of rows
+      description: ''
+      operationId: getDatasetJson
+      produces:
+      - application/json
+      - text/plain
+      - application/octet-stream
+      parameters:
+      - name: uri
+        in: query
+        description: the dataset's physical URI
+        required: true
+        type: string
+      - name: format
+        in: query
+        description: the dataset's format
+        required: true
+        type: string
+      - name: limit
+        in: query
+        description: max number of rows/chunks to return
+        required: false
+        type: integer
+        format: int32
+      - name: chunk_size
+        in: query
+        description: chunk size
+        required: false
+        type: integer
+        format: int32
+      responses:
+        '200':
+          description: An array of Dataset
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RawDataset'
   "/physical-datasets/schema":
     get:
       tags:
@@ -113,14 +151,14 @@ paths:
           description: successful operation
           schema:
             "$ref": "#/definitions/ActionAnyContent"
-      # security:
-      # - basicAuth: []
-# securityDefinitions:
-#   basicAuth:
-#     type: basic
 definitions:
   ActionAnyContent:
     type: object
     properties:
       token:
+        type: string
+  RawDataset:
+    type: object
+    properties:
+      _c0:
         type: string
