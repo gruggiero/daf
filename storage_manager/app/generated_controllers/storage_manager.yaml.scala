@@ -41,7 +41,9 @@ package storage_manager.yaml {
         val getDataset = getDatasetAction { input: (String, String, Physical_datasetsGetChunk_size, Physical_datasetsGetChunk_size) =>
             val (uri, format, limit, chunk_size) = input
             // ----- Start of unmanaged code area for action  Storage_managerYaml.getDataset
-            NotImplementedYet
+            Logger("getDataset").info(s"GetDataset in action: ${chunk_size}")
+
+          GetDataset200(res)
             // ----- End of unmanaged code area for action  Storage_managerYaml.getDataset
         }
         val getDatasetSchema = getDatasetSchemaAction { input: (String, String) =>

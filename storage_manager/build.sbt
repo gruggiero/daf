@@ -22,7 +22,7 @@ import sbt.Keys.resolvers
 organization in ThisBuild := "it.gov.daf"
 name := "daf-storage-manager"
 
-version := "1.0-SNAPSHOT"
+version := "1.0.1-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.11.8"
 
@@ -103,7 +103,7 @@ libraryDependencies ++= Seq(
   specs2 % Test,
   "io.swagger" %% "swagger-play2" % "1.5.3",
   "com.typesafe.play" %% "play-json" % playVersion,
-  "it.gov.daf" %% "common" % version.value
+  "it.gov.daf" %% "common" % "1.0-SNAPSHOT"
 ) ++ hadoopLibraries ++ sparkLibraries
 
 resolvers ++= Seq(
