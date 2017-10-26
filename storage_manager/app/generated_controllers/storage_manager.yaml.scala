@@ -22,6 +22,8 @@ import it.gov.daf.storagemanager.Dataset._
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{AnalysisException,SparkSession}
 
+import play.api.mvc.{ AnyContent, Request }
+
 /**
  * This controller is re-generated after each change in the specification.
  * Please only place your hand-written code between appropriate comments in the body of the controller.
@@ -29,7 +31,7 @@ import org.apache.spark.sql.{AnalysisException,SparkSession}
 
 package storage_manager.yaml {
     // ----- Start of unmanaged code area for package Storage_managerYaml
-    
+
     // ----- End of unmanaged code area for package Storage_managerYaml
     class Storage_managerYaml @Inject() (
         // ----- Start of unmanaged code area for injections Storage_managerYaml
@@ -57,7 +59,7 @@ package storage_manager.yaml {
             val (uri, format, limit, chunk_size) = input
             // ----- Start of unmanaged code area for action  Storage_managerYaml.getDataset
             // Logger("getDataset").info(s"GetDataset in action: ${chunk_size}")
-          val auth = currentRequest.headers.get("authorization")
+          // val auth = currentRequest.headers.get("authorization")
           // getLogicalDataset(uri, format, limit, chunk_size)
           // GetDataset200(res)
             NotImplementedYet
@@ -66,7 +68,10 @@ package storage_manager.yaml {
         val getDatasetJson = getDatasetJsonAction { input: (String, String, Physical_datasetsGetChunk_size, Physical_datasetsGetChunk_size) =>
             val (uri, format, limit, chunk_size) = input
             // ----- Start of unmanaged code area for action  Storage_managerYaml.getDatasetJson
-            NotImplementedYet
+          val auth = currentRequest.headers.get("authorization")
+          implicit val req: Request[Any] = currentRequest
+          GetDatasetJson200( getPhysicalDatasetJson(uri, format, limit.getOrElse(defaultLimit), chunk_size.getOrElse(defaultChunkSize)))
+            // NotImplementedYet
             // ----- End of unmanaged code area for action  Storage_managerYaml.getDatasetJson
         }
         val getDatasetSchema = getDatasetSchemaAction { input: (String, String) =>
@@ -75,6 +80,6 @@ package storage_manager.yaml {
             NotImplementedYet
             // ----- End of unmanaged code area for action  Storage_managerYaml.getDatasetSchema
         }
-    
+
     }
 }
